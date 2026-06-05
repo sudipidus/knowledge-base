@@ -1,0 +1,17 @@
+provider: ollama
+
+claude:
+  api_key: ${ANTHROPIC_API_KEY}
+  model: claude-sonnet-4-20250514
+
+openai:
+  api_key: ${OPENAI_API_KEY}
+  model: gpt-4o
+
+ollama:
+  model: llama3.1
+  base_url: http://localhost:11434
+
+vault_path: .
+stale_threshold_days: 30
+auto_commit: true
