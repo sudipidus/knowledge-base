@@ -3,7 +3,7 @@ title: "Raft Consensus Algorithm"
 type: source-summary
 source_type: "text"
 ingested_at: 2026-06-05
-tags: [consensus, algorithm, distributed systems, paxos, leader election]
+tags: [consensus, algorithm, distributed systems, paxos, distributed consensus]
 publish: true
 ---
 
@@ -11,12 +11,12 @@ publish: true
 
 ## Key Takeaways
 
-- Raft was created by Diego Ongaro and John Ousterhout in 2014
-- It's designed to be easy to understand compared to Paxos
+- Raft simplifies the consensus problem
+- It's designed for understandability
 
 ## Summary
 
-Raft is a consensus algorithm designed to be easy to understand. It divides the consensus problem into three sub-problems: Leader Election, Log Replication, and Safety.
+Raft is a consensus algorithm designed to be easy to understand, dividing the problem into leader election, log replication, and safety. It was created by Diego Ongaro and John Ousterhout at Stanford University in 2014.
 
 ## Entities & Concepts Mentioned
 
