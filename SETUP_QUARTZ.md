@@ -7,37 +7,41 @@
 
 ## Setup
 
-Quartz needs to be initialized once before you can use `wiki publish`.
+Quartz v5 is a framework you clone and configure. Run this once:
 
 ```bash
 cd ~/projects/knowledge-base
 
-# Initialize Quartz in the project root
-npx quartz create
+# Clone Quartz into the project root (it adds quartz/, package.json, etc.)
+git clone https://github.com/jackyzha0/quartz.git quartz-tmp
+cp -r quartz-tmp/quartz quartz-tmp/package.json quartz-tmp/tsconfig.json quartz-tmp/quartz.config.default.yaml .
+rm -rf quartz-tmp
 
-# When prompted:
-# - Choose "Empty Quartz" (we have our own content in wiki/)
-# - Choose your preferred link style (recommend "Shortest path")
+# Install dependencies
+npm install
 ```
 
-After initialization, edit `quartz.config.ts` to point at your wiki directory:
+Then configure Quartz to read from your `wiki/` directory. Edit `quartz.config.default.yaml` and set the content directory:
 
-```ts
-// In quartz.config.ts, find the configuration object and set:
-configuration: {
-  // ... other settings
-  contentFolder: "wiki",  // Point to our wiki/ directory instead of default content/
-}
+```yaml
+# In quartz.config.default.yaml, find and change:
+contentDirectory: wiki
+```
+
+Or if using the `create` command after `npm install`:
+
+```bash
+npm run quartz -- create --directory wiki --strategy new --template obsidian --links shortest
 ```
 
 ## Verify
 
 ```bash
 # Build locally
-npx quartz build
+npm run quartz -- build --directory wiki
 
 # Preview with live reload
-npx quartz build --serve
+npm run quartz -- build --serve --directory wiki
 # Open http://localhost:8080
 ```
 
@@ -49,3 +53,7 @@ To enable:
 1. Push this repo to GitHub
 2. Go to Settings > Pages > Source: GitHub Actions
 3. Push a change to `wiki/` — the action will build and deploy automatically
+
+## Privacy
+
+Pages with `publish: false` in frontmatter are filtered out during the CI build (see the workflow file). They remain visible locally in Obsidian but won't appear on the public site.
