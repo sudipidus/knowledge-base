@@ -84,9 +84,49 @@ def reingest(source: str = typer.Argument(...)):
 
 
 @app.command()
-def query(question: str = typer.Argument(None), save: bool = False, interactive: bool = typer.Option(False, "-i")):
+def query(
+    question: str = typer.Argument(None, help="Question to ask the knowledge base"),
+    save: bool = typer.Option(False, "--save", help="Save the answer as an exploration page"),
+    interactive: bool = typer.Option(False, "-i", help="Interactive mode: ask multiple questions"),
+):
     """Query the knowledge base."""
-    typer.echo("wiki query - not yet implemented")
+    from wiki_cli.commands.query import QueryEngine
+    from wiki_cli.config import load_config
+    from wiki_cli.wiki_manager import WikiManager
+
+    config = load_config(Path("wiki.yaml"))
+    vault_path = config.vault_path
+
+    if config.provider == "ollama":
+        from wiki_cli.providers.ollama import OllamaProvider
+        provider = OllamaProvider(**config.provider_config)
+    elif config.provider == "claude":
+        from wiki_cli.providers.claude import ClaudeProvider
+        provider = ClaudeProvider(**config.provider_config)
+    elif config.provider == "openai":
+        from wiki_cli.providers.openai_provider import OpenAIProvider
+        provider = OpenAIProvider(**config.provider_config)
+    else:
+        typer.echo(f"Unknown provider: {config.provider}")
+        raise typer.Exit(1)
+
+    wiki_mgr = WikiManager(vault_path)
+    engine = QueryEngine(wiki_mgr, provider)
+
+    if interactive:
+        typer.echo("Interactive query mode (type 'exit' to quit)")
+        while True:
+            q = input("\n> ")
+            if q.strip().lower() in ("exit", "quit", "q"):
+                break
+            answer = engine.ask(q, save=save)
+            typer.echo(f"\n{answer}")
+    else:
+        if not question:
+            typer.echo("Error: question argument required (or use -i for interactive mode)")
+            raise typer.Exit(1)
+        answer = engine.ask(question, save=save)
+        typer.echo(answer)
 
 
 @app.command()
