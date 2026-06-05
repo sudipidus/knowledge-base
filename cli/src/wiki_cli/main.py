@@ -9,6 +9,18 @@ app = typer.Typer(
 )
 
 
+def _load_deps():
+    """Load config, provider, and wiki manager."""
+    from wiki_cli.config import load_config
+    from wiki_cli.providers import get_provider
+    from wiki_cli.wiki_manager import WikiManager
+
+    config = load_config(Path("wiki.yaml"))
+    provider = get_provider(config.provider, config.provider_config)
+    wiki_mgr = WikiManager(config.vault_path)
+    return config, provider, wiki_mgr
+
+
 @app.command()
 def init(
     path: str = typer.Argument(".", help="Path to initialize the knowledge base"),
@@ -27,140 +39,95 @@ def ingest(
 ):
     """Ingest a source into the knowledge base."""
     from wiki_cli.commands.ingest import IngestPipeline
-    from wiki_cli.config import load_config
-    from wiki_cli.wiki_manager import WikiManager
 
-    config = load_config(Path("wiki.yaml"))
-    vault_path = config.vault_path
-
-    # Build provider from config
-    if config.provider == "ollama":
-        from wiki_cli.providers.ollama import OllamaProvider
-        provider = OllamaProvider(**config.provider_config)
-    elif config.provider == "claude":
-        from wiki_cli.providers.claude import ClaudeProvider
-        provider = ClaudeProvider(**config.provider_config)
-    elif config.provider == "openai":
-        from wiki_cli.providers.openai_provider import OpenAIProvider
-        provider = OpenAIProvider(**config.provider_config)
-    else:
-        typer.echo(f"Unknown provider: {config.provider}")
-        raise typer.Exit(1)
-
-    wiki_mgr = WikiManager(vault_path)
-    pipeline = IngestPipeline(wiki_mgr, provider, vault_path)
+    config, provider, wiki_mgr = _load_deps()
+    pipeline = IngestPipeline(wiki_mgr, provider, config.vault_path)
 
     if inbox:
         results = pipeline.run_inbox()
+        succeeded = sum(1 for r in results if r.success)
+        failed = sum(1 for r in results if not r.success)
+        typer.echo(f"Inbox: {succeeded} succeeded, {failed} failed")
         for r in results:
-            if r.success:
-                typer.echo(f"Ingested: {r.title} ({r.pages_created} created, {r.pages_updated} updated)")
-            else:
-                typer.echo(f"Failed: {r.error}")
+            if not r.success:
+                typer.echo(f"  FAILED: {r.error}", err=True)
     elif ref:
         if not source:
-            typer.echo("Error: URL required for reference mode")
+            typer.echo("Error: source URL required with --ref", err=True)
             raise typer.Exit(1)
         result = pipeline.run_reference(source, description or source)
-        if result.success:
-            typer.echo(f"Reference saved: {result.title}")
-        else:
-            typer.echo(f"Failed: {result.error}")
+        typer.echo(f"Reference saved: {result.title}" if result.success else f"Error: {result.error}")
     else:
         if not source:
-            typer.echo("Error: source argument required (or use --inbox)")
+            typer.echo("Error: provide a source or use --inbox", err=True)
             raise typer.Exit(1)
         result = pipeline.run(source)
         if result.success:
-            typer.echo(f"Ingested: {result.title} ({result.pages_created} created, {result.pages_updated} updated)")
+            typer.echo(f'Ingested: "{result.title}" (+{result.pages_created}, ~{result.pages_updated} updated)')
         else:
-            typer.echo(f"Failed: {result.error}")
+            typer.echo(f"Error: {result.error}", err=True)
 
 
 @app.command()
-def reingest(source: str = typer.Argument(...)):
+def reingest(
+    source: str = typer.Argument(..., help="URL or file path to re-ingest"),
+):
     """Re-fetch and update a previously ingested source."""
     from wiki_cli.commands.reingest import ReingestPipeline
-    from wiki_cli.config import load_config
-    from wiki_cli.wiki_manager import WikiManager
 
-    config = load_config(Path("wiki.yaml"))
-    vault_path = config.vault_path
-
-    if config.provider == "ollama":
-        from wiki_cli.providers.ollama import OllamaProvider
-        provider = OllamaProvider(**config.provider_config)
-    elif config.provider == "claude":
-        from wiki_cli.providers.claude import ClaudeProvider
-        provider = ClaudeProvider(**config.provider_config)
-    elif config.provider == "openai":
-        from wiki_cli.providers.openai_provider import OpenAIProvider
-        provider = OpenAIProvider(**config.provider_config)
-    else:
-        typer.echo(f"Unknown provider: {config.provider}")
-        raise typer.Exit(1)
-
-    wiki_mgr = WikiManager(vault_path)
-    pipeline = ReingestPipeline(wiki_mgr, provider, vault_path)
+    config, provider, wiki_mgr = _load_deps()
+    pipeline = ReingestPipeline(wiki_mgr, provider, config.vault_path)
     result = pipeline.run(source)
 
     if result.success:
         if result.title == "(unchanged)":
-            typer.echo(f"Source unchanged, skipping: {source}")
+            typer.echo("No changes detected. Skipping.")
         else:
-            typer.echo(f"Reingested: {result.title} ({result.pages_created} created, {result.pages_updated} updated)")
+            typer.echo(f'Re-ingested: "{result.title}" (+{result.pages_created}, ~{result.pages_updated} updated)')
     else:
-        typer.echo(f"Failed: {result.error}")
+        typer.echo(f"Error: {result.error}", err=True)
 
 
 @app.command()
 def query(
     question: str = typer.Argument(None, help="Question to ask the knowledge base"),
     save: bool = typer.Option(False, "--save", help="Save the answer as an exploration page"),
-    interactive: bool = typer.Option(False, "-i", help="Interactive mode: ask multiple questions"),
+    interactive: bool = typer.Option(False, "-i", help="Interactive mode"),
 ):
     """Query the knowledge base."""
     from wiki_cli.commands.query import QueryEngine
-    from wiki_cli.config import load_config
-    from wiki_cli.wiki_manager import WikiManager
 
-    config = load_config(Path("wiki.yaml"))
-    vault_path = config.vault_path
-
-    if config.provider == "ollama":
-        from wiki_cli.providers.ollama import OllamaProvider
-        provider = OllamaProvider(**config.provider_config)
-    elif config.provider == "claude":
-        from wiki_cli.providers.claude import ClaudeProvider
-        provider = ClaudeProvider(**config.provider_config)
-    elif config.provider == "openai":
-        from wiki_cli.providers.openai_provider import OpenAIProvider
-        provider = OpenAIProvider(**config.provider_config)
-    else:
-        typer.echo(f"Unknown provider: {config.provider}")
-        raise typer.Exit(1)
-
-    wiki_mgr = WikiManager(vault_path)
+    _, provider, wiki_mgr = _load_deps()
     engine = QueryEngine(wiki_mgr, provider)
 
     if interactive:
-        typer.echo("Interactive query mode (type 'exit' to quit)")
+        typer.echo("Interactive mode. /save to save last answer, /quit to exit.")
+        last_answer = ""
         while True:
-            q = input("\n> ")
-            if q.strip().lower() in ("exit", "quit", "q"):
+            q = typer.prompt("wiki")
+            if q == "/quit":
                 break
-            answer = engine.ask(q, save=save)
-            typer.echo(f"\n{answer}")
+            if q == "/save" and last_answer:
+                engine._save_exploration("interactive-query", last_answer)
+                typer.echo("Saved.")
+                continue
+            last_answer = engine.ask(q)
+            typer.echo(f"\n{last_answer}\n")
     else:
         if not question:
-            typer.echo("Error: question argument required (or use -i for interactive mode)")
+            typer.echo("Error: provide a question or use -i", err=True)
             raise typer.Exit(1)
         answer = engine.ask(question, save=save)
         typer.echo(answer)
+        if save:
+            typer.echo("\n(Saved to explorations)")
 
 
 @app.command()
-def lint(fix: bool = False, deep: bool = False):
+def lint(
+    fix: bool = typer.Option(False, "--fix", help="Auto-fix repairable issues"),
+    deep: bool = typer.Option(False, "--deep", help="LLM-powered deep analysis"),
+):
     """Run health checks on the wiki."""
     from wiki_cli.commands.lint import WikiLinter
     from wiki_cli.config import load_config
@@ -171,15 +138,28 @@ def lint(fix: bool = False, deep: bool = False):
     linter = WikiLinter(wiki_mgr)
     report = linter.run_all()
 
-    typer.echo(f"Wiki Lint Report: {report['total_issues']} issue(s) found\n")
-    for check_name, issues in report["by_check"].items():
-        typer.echo(f"  {check_name}: {len(issues)}")
-        for issue in issues:
-            typer.echo(f"    - [{issue['page']}] {issue['detail']}")
+    total = report["total_issues"]
+    pages = len(wiki_mgr.list_pages())
+    typer.echo(f"Wiki Health Report\n==================\n{pages} pages scanned\n")
+
+    if total == 0:
+        typer.echo("All checks passed!")
+    else:
+        for check_name, issues in report["by_check"].items():
+            sym = "x" if issues else "v"
+            typer.echo(f"  [{sym}] {check_name}: {len(issues)}")
+            for issue in issues[:5]:
+                typer.echo(f"      - {issue['page']}: {issue['detail']}")
+            if len(issues) > 5:
+                typer.echo(f"      ... and {len(issues) - 5} more")
+
+    typer.echo(f"\nTotal: {total} issues")
 
 
 @app.command()
-def publish(preview: bool = False):
+def publish(
+    preview: bool = typer.Option(False, "--preview", help="Start local dev server"),
+):
     """Build and publish the wiki with Quartz."""
     from wiki_cli.commands.publish import run_publish
     run_publish(preview=preview)
