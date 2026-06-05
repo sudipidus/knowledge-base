@@ -39,7 +39,9 @@ class QueryEngine:
 
     def _search(self, question: str) -> list[dict]:
         all_pages = self.wiki_mgr.get_all_page_summaries()
-        question_words = {w for w in question.lower().split() if w not in self.STOPWORDS and len(w) > 1}
+        import re
+        words = re.findall(r'[a-z0-9]+', question.lower())
+        question_words = {w for w in words if w not in self.STOPWORDS and len(w) > 1}
         if not question_words:
             question_words = set(question.lower().split())
 
