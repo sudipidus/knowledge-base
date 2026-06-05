@@ -1,6 +1,8 @@
 # Knowledge Base Index
 
 ## Entities
+- [[entities/ripgrep|ripgrep]]
+- [[entities/modern-unix|modern-unix]]
 - [[entities/the-joel-test|The Joel Test]]
 - [[entities/sema|SEMA]]
 - [[entities/redis-cluster|Redis Cluster]]
@@ -15,6 +17,8 @@
 - [[entities/diego-ongaro|Diego Ongaro]]
 
 ## Concepts
+- [[concepts/replacement-tools|replacement tools]]
+- [[concepts/command-line-tool|command line tool]]
 - [[concepts/bug-tracking|Bug Tracking]]
 - [[concepts/automated-builds|Automated Builds]]
 - [[concepts/source-control|Source Control]]
