@@ -34,6 +34,7 @@ wiki lint
 | `wiki query -i` | Interactive query mode |
 | `wiki query "question" --save` | Save the answer as an exploration page |
 | `wiki lint` | Run structural health checks |
+| `wiki serve [--port 8000]` | Start the API server for the web chat widget |
 | `wiki publish --preview` | Preview site locally via Quartz |
 
 ## LLM Provider Setup
@@ -89,12 +90,20 @@ npm install
 npm run quartz -- plugin install --from-config
 ```
 
-### Preview locally
+### Preview locally with chat
+
+Run both in separate terminals:
 
 ```bash
+# Terminal 1: Start the wiki API server (powers the chat widget)
+wiki serve
+
+# Terminal 2: Start Quartz dev server
 npm run quartz -- build -d wiki --serve
 # Open http://localhost:8080
 ```
+
+A chat bubble appears in the bottom-right corner of every page. Click it to query your knowledge base — same as `wiki query` but from the browser. Each response has a "Save to wiki" button (same as `--save`).
 
 ### Build static site
 
