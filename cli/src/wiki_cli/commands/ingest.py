@@ -207,7 +207,8 @@ class IngestPipeline:
             f"Description: {info.get('description', '')}\n"
             f"Category: {info.get('category', page_type)}"
         )
-        return self.provider.complete_with_context(system_prompt, context, prompt)
+        raw = self.provider.complete_with_context(system_prompt, context, prompt)
+        return self._strip_llm_wrapper(raw)
 
     def _update_page(self, existing: str, new_info: dict) -> str:
         """Use LLM to merge new information into an existing page."""
@@ -220,7 +221,27 @@ class IngestPipeline:
             f"Existing page:\n{existing}\n\n"
             f"New information to merge:\n{json.dumps(new_info, indent=2)}"
         )
-        return self.provider.complete_with_context(system_prompt, [existing], prompt)
+        raw = self.provider.complete_with_context(system_prompt, [existing], prompt)
+        return self._strip_llm_wrapper(raw)
+
+    @staticmethod
+    def _strip_llm_wrapper(text: str) -> str:
+        """Strip LLM preamble/postamble around generated markdown pages."""
+        lines = text.strip().split("\n")
+        # Find first line starting with "---" (frontmatter start)
+        start = 0
+        for i, line in enumerate(lines):
+            if line.strip() == "---":
+                start = i
+                break
+        # Find last meaningful content (strip trailing LLM chatter after the page)
+        end = len(lines)
+        for i in range(len(lines) - 1, -1, -1):
+            line = lines[i].strip()
+            if line and not line.startswith(("I hope", "Let me know", "Here is", "Feel free", "Is there")):
+                end = i + 1
+                break
+        return "\n".join(lines[start:end]).strip()
 
     def _create_source_summary(self, parsed: ParseResult, extraction: dict) -> None:
         """Create a source summary page."""
