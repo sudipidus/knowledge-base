@@ -181,7 +181,8 @@ def lint(fix: bool = False, deep: bool = False):
 @app.command()
 def publish(preview: bool = False):
     """Build and publish the wiki with Quartz."""
-    typer.echo("wiki publish - not yet implemented")
+    from wiki_cli.commands.publish import run_publish
+    run_publish(preview=preview)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,39 @@
+name: Publish Wiki
+on:
+  push:
+    branches: [main]
+    paths: [wiki/**]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Filter unpublished pages
+        run: |
+          find wiki -name '*.md' | while read f; do
+            if head -20 "$f" | grep -q 'publish: false'; then
+              rm "$f"
+            fi
+          done
+      - run: npx quartz build
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deployment
+        uses: actions/deploy-pages@v4
