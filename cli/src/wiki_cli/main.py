@@ -165,5 +165,16 @@ def publish(
     run_publish(preview=preview)
 
 
+@app.command()
+def serve(
+    port: int = typer.Option(8000, "--port", help="Port to run the API server on"),
+):
+    """Start the wiki query API server."""
+    import uvicorn
+    typer.echo(f"Starting wiki API server on http://localhost:{port}")
+    typer.echo("Chat widget on Quartz will connect to this server.")
+    uvicorn.run("wiki_cli.server:app", host="0.0.0.0", port=port, reload=False)
+
+
 if __name__ == "__main__":
     app()
