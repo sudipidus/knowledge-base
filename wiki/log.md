@@ -16,3 +16,5 @@ This file records every ingest / update operation performed on the wiki.
 ## [2026-06-05] ingest | "The Developer Culture Test: A Guide to Building Thriving Teams"
 
 ## [2026-06-05] ingest | "Strangler Fig: An Approach to Legacy Modernization"
+
+## [2026-06-05] ingest | "Redis Explained"

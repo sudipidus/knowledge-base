@@ -1,6 +1,10 @@
 # Knowledge Base Index
 
 ## Entities
+- [[entities/redis-cluster|Redis Cluster]]
+- [[entities/redis-sentinel|Redis Sentinel]]
+- [[entities/memcached|Memcached]]
+- [[entities/redis|Redis]]
 - [[entities/martin-fowler|[Martin Fowler](/)]]
 - [[entities/strangler-fig-application|Strangler Fig Application]]
 - [[entities/martin-kleppmann|Martin Kleppmann]]
@@ -9,6 +13,8 @@
 - [[entities/diego-ongaro|Diego Ongaro]]
 
 ## Concepts
+- [[concepts/high-availability-ha|High Availability (HA)]]
+- [[concepts/data-structures|Data Structures]]
 - [[concepts/seams|Seams]]
 - [[concepts/strangler-fig|Strangler Fig]]
 - [[concepts/autonomy|Autonomy]]
