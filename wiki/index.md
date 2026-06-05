@@ -7,6 +7,8 @@
 - [[entities/diego-ongaro|Diego Ongaro]]
 
 ## Concepts
+- [[concepts/autonomy|Autonomy]]
+- [[concepts/psychological-safety|Psychological Safety]]
 - [[concepts/eventual-consistency|Eventual consistency]]
 - [[concepts/cap-theorem-tradeoff|CAP theorem tradeoff]]
 - [[concepts/split-vote|Split Vote]]

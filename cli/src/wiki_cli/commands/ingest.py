@@ -132,23 +132,39 @@ class IngestPipeline:
         system_prompt = (
             "You are a knowledge extraction assistant. Extract structured information "
             "from the provided content. Return valid JSON with these fields:\n"
-            "- title: a concise title summarizing the content\n"
-            "- summary: a 2-3 sentence summary\n"
-            "- takeaways: list of key takeaway strings\n"
-            "- entities: list of {name, category, description} for people/tools/projects\n"
-            "- concepts: list of {name, description} for ideas/patterns/principles\n"
-            "- tags: list of lowercase tag strings\n\n"
-            "Return ONLY valid JSON, no markdown fencing."
+            '- "title": a concise title summarizing the content\n'
+            '- "summary": a 2-3 sentence summary\n'
+            '- "takeaways": list of key takeaway strings\n'
+            '- "entities": list of {"name", "category", "description"} for people/tools/projects\n'
+            '- "concepts": list of {"name", "description"} for ideas/patterns/principles\n'
+            '- "tags": list of lowercase tag strings\n\n'
+            "Return ONLY valid JSON. No explanation, no markdown fencing, no text before or after the JSON."
         )
-        raw = self.provider.complete(system_prompt, parsed.content)
-        # Strip markdown fencing if present
+        # Truncate content to avoid overwhelming smaller models
+        content = parsed.content
+        if len(content) > 8000:
+            content = content[:8000] + "\n\n[Content truncated...]"
+
+        raw = self.provider.complete(system_prompt, content)
+        raw = self._clean_json_response(raw)
+        return json.loads(raw)
+
+    @staticmethod
+    def _clean_json_response(raw: str) -> str:
+        """Extract JSON from an LLM response that may contain extra text."""
         raw = raw.strip()
+        # Strip markdown fencing
         if raw.startswith("```"):
             raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
             if raw.endswith("```"):
                 raw = raw[:-3]
             raw = raw.strip()
-        return json.loads(raw)
+        # Find the JSON object if there's surrounding text
+        start = raw.find("{")
+        end = raw.rfind("}") + 1
+        if start != -1 and end > start:
+            raw = raw[start:end]
+        return raw
 
     def _copy_raw(self, parsed: ParseResult) -> Path:
         """Copy the raw source into sources/raw/."""
