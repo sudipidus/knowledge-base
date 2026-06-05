@@ -80,7 +80,37 @@ def ingest(
 @app.command()
 def reingest(source: str = typer.Argument(...)):
     """Re-fetch and update a previously ingested source."""
-    typer.echo("wiki reingest - not yet implemented")
+    from wiki_cli.commands.reingest import ReingestPipeline
+    from wiki_cli.config import load_config
+    from wiki_cli.wiki_manager import WikiManager
+
+    config = load_config(Path("wiki.yaml"))
+    vault_path = config.vault_path
+
+    if config.provider == "ollama":
+        from wiki_cli.providers.ollama import OllamaProvider
+        provider = OllamaProvider(**config.provider_config)
+    elif config.provider == "claude":
+        from wiki_cli.providers.claude import ClaudeProvider
+        provider = ClaudeProvider(**config.provider_config)
+    elif config.provider == "openai":
+        from wiki_cli.providers.openai_provider import OpenAIProvider
+        provider = OpenAIProvider(**config.provider_config)
+    else:
+        typer.echo(f"Unknown provider: {config.provider}")
+        raise typer.Exit(1)
+
+    wiki_mgr = WikiManager(vault_path)
+    pipeline = ReingestPipeline(wiki_mgr, provider, vault_path)
+    result = pipeline.run(source)
+
+    if result.success:
+        if result.title == "(unchanged)":
+            typer.echo(f"Source unchanged, skipping: {source}")
+        else:
+            typer.echo(f"Reingested: {result.title} ({result.pages_created} created, {result.pages_updated} updated)")
+    else:
+        typer.echo(f"Failed: {result.error}")
 
 
 @app.command()
