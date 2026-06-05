@@ -132,7 +132,20 @@ def query(
 @app.command()
 def lint(fix: bool = False, deep: bool = False):
     """Run health checks on the wiki."""
-    typer.echo("wiki lint - not yet implemented")
+    from wiki_cli.commands.lint import WikiLinter
+    from wiki_cli.config import load_config
+    from wiki_cli.wiki_manager import WikiManager
+
+    config = load_config(Path("wiki.yaml"))
+    wiki_mgr = WikiManager(config.vault_path)
+    linter = WikiLinter(wiki_mgr)
+    report = linter.run_all()
+
+    typer.echo(f"Wiki Lint Report: {report['total_issues']} issue(s) found\n")
+    for check_name, issues in report["by_check"].items():
+        typer.echo(f"  {check_name}: {len(issues)}")
+        for issue in issues:
+            typer.echo(f"    - [{issue['page']}] {issue['detail']}")
 
 
 @app.command()
