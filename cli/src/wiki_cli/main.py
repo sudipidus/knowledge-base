@@ -19,9 +19,62 @@ def init(
 
 
 @app.command()
-def ingest(source: str = typer.Argument(None), inbox: bool = False, ref: bool = False):
+def ingest(
+    source: str = typer.Argument(None, help="File path or URL to ingest"),
+    inbox: bool = typer.Option(False, help="Process all files in the inbox"),
+    ref: bool = typer.Option(False, help="Save as reference only"),
+    description: str = typer.Option("", help="Description for reference entries"),
+):
     """Ingest a source into the knowledge base."""
-    typer.echo("wiki ingest - not yet implemented")
+    from wiki_cli.commands.ingest import IngestPipeline
+    from wiki_cli.config import load_config
+    from wiki_cli.wiki_manager import WikiManager
+
+    config = load_config(Path("wiki.yaml"))
+    vault_path = config.vault_path
+
+    # Build provider from config
+    if config.provider == "ollama":
+        from wiki_cli.providers.ollama import OllamaProvider
+        provider = OllamaProvider(**config.provider_config)
+    elif config.provider == "claude":
+        from wiki_cli.providers.claude import ClaudeProvider
+        provider = ClaudeProvider(**config.provider_config)
+    elif config.provider == "openai":
+        from wiki_cli.providers.openai_provider import OpenAIProvider
+        provider = OpenAIProvider(**config.provider_config)
+    else:
+        typer.echo(f"Unknown provider: {config.provider}")
+        raise typer.Exit(1)
+
+    wiki_mgr = WikiManager(vault_path)
+    pipeline = IngestPipeline(wiki_mgr, provider, vault_path)
+
+    if inbox:
+        results = pipeline.run_inbox()
+        for r in results:
+            if r.success:
+                typer.echo(f"Ingested: {r.title} ({r.pages_created} created, {r.pages_updated} updated)")
+            else:
+                typer.echo(f"Failed: {r.error}")
+    elif ref:
+        if not source:
+            typer.echo("Error: URL required for reference mode")
+            raise typer.Exit(1)
+        result = pipeline.run_reference(source, description or source)
+        if result.success:
+            typer.echo(f"Reference saved: {result.title}")
+        else:
+            typer.echo(f"Failed: {result.error}")
+    else:
+        if not source:
+            typer.echo("Error: source argument required (or use --inbox)")
+            raise typer.Exit(1)
+        result = pipeline.run(source)
+        if result.success:
+            typer.echo(f"Ingested: {result.title} ({result.pages_created} created, {result.pages_updated} updated)")
+        else:
+            typer.echo(f"Failed: {result.error}")
 
 
 @app.command()
