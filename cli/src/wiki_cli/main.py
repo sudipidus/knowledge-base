@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import typer
 
 app = typer.Typer(
@@ -8,9 +10,12 @@ app = typer.Typer(
 
 
 @app.command()
-def init():
+def init(
+    path: str = typer.Argument(".", help="Path to initialize the knowledge base"),
+):
     """Initialize a new knowledge base."""
-    typer.echo("wiki init - not yet implemented")
+    from wiki_cli.commands.init_cmd import run_init
+    run_init(Path(path))
 
 
 @app.command()
