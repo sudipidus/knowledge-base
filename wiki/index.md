@@ -1,6 +1,8 @@
 # Knowledge Base Index
 
 ## Entities
+- [[entities/the-joel-test|The Joel Test]]
+- [[entities/sema|SEMA]]
 - [[entities/redis-cluster|Redis Cluster]]
 - [[entities/redis-sentinel|Redis Sentinel]]
 - [[entities/memcached|Memcached]]
@@ -13,6 +15,9 @@
 - [[entities/diego-ongaro|Diego Ongaro]]
 
 ## Concepts
+- [[concepts/bug-tracking|Bug Tracking]]
+- [[concepts/automated-builds|Automated Builds]]
+- [[concepts/source-control|Source Control]]
 - [[concepts/high-availability-ha|High Availability (HA)]]
 - [[concepts/data-structures|Data Structures]]
 - [[concepts/seams|Seams]]

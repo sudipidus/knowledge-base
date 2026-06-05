@@ -18,3 +18,5 @@ This file records every ingest / update operation performed on the wiki.
 ## [2026-06-05] ingest | "Strangler Fig: An Approach to Legacy Modernization"
 
 ## [2026-06-05] ingest | "Redis Explained"
+
+## [2026-06-05] ingest | "The Joel Test: Twelve Questions to Ask Before Your Next Code Dump"
