@@ -1,15 +1,20 @@
 name: Publish Wiki
+
 on:
   push:
     branches: [main]
     paths: [wiki/**]
+  workflow_dispatch: # allow manual trigger
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -18,11 +23,40 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 22
+
+      # Set up Quartz v5
+      - name: Clone Quartz
+        run: |
+          git clone --depth 1 https://github.com/jackyzha0/quartz.git quartz-tmp
+          cp -r quartz-tmp/quartz quartz-tmp/package.json quartz-tmp/package-lock.json \
+                quartz-tmp/quartz.config.default.yaml quartz-tmp/quartz.lock.json \
+                quartz-tmp/globals.d.ts quartz-tmp/index.d.ts .
+          rm -rf quartz-tmp
+
+      - name: Create Quartz config entry point
+        run: |
+          cat > quartz.ts << 'EOF'
+          import { loadQuartzConfig, loadQuartzLayout } from "./quartz/plugins/loader/config-loader"
+          const config = await loadQuartzConfig()
+          export default config
+          export const layout = await loadQuartzLayout()
+          EOF
+
+      - name: Create Quartz site config
+        run: |
+          cp quartz.config.default.yaml quartz.config.yaml
+          sed -i 's/pageTitle: Quartz 5/pageTitle: Knowledge Base/' quartz.config.yaml
+          sed -i 's|baseUrl: quartz.jzhao.xyz|baseUrl: sudipidus.github.io/knowledge-base|' quartz.config.yaml
+
       - run: npm ci
+
+      - name: Install Quartz plugins
+        run: npm run quartz -- plugin install --from-config
+
       - name: Filter unpublished pages
         run: |
           find wiki -name '*.md' | while read f; do
@@ -30,10 +64,15 @@ jobs:
               rm "$f"
             fi
           done
-      - run: npx quartz build
+
+      - name: Build site
+        run: npm run quartz -- build -d wiki
+
       - uses: actions/configure-pages@v4
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public
+
       - id: deployment
         uses: actions/deploy-pages@v4
