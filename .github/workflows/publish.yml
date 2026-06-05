@@ -3,7 +3,10 @@ name: Publish Wiki
 on:
   push:
     branches: [main]
-    paths: [wiki/**]
+    paths:
+      - wiki/**
+      - quartz.config.yaml
+      - quartz.ts
   workflow_dispatch:
 
 permissions:
