@@ -9,7 +9,7 @@ openai:
   model: gpt-4o
 
 ollama:
-  model: llama3.1
+  model: llama3
   base_url: http://localhost:11434
 
 vault_path: .
