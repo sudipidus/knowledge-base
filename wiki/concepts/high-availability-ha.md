@@ -1,11 +1,11 @@
-```yaml
+---
 title: High-Availability
 type: concept
 tags: [system-design, reliability, redundancy]
 created_at: "2023-11-08"
 updated_at: "2023-11-08"
 publish: true
-```
+---
 
 # High Availability (HA)
 
@@ -43,4 +43,3 @@ In server environments, clustering ensures high availability by:
 - [[system-design]]
 - [[failover-mechanism]]
 - [[load-balancing]]
-```

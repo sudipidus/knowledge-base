@@ -1,4 +1,4 @@
-```yaml
+---
 title: "SEMA"
 type: entity
 category: system
@@ -8,7 +8,7 @@ tags:
 created_at: 2023-11-07
 updated_at: 2023-11-07
 publish: true
-```
+---
 
 # SEMA
 
@@ -33,4 +33,3 @@ However, while SEMA aims to provide valuable insights, it has not gained widespr
 ## Related
 
 [[Software-Quality-Metrics]], [[Team-Performance-Assessment]]
-```

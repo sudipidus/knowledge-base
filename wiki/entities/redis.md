@@ -1,4 +1,4 @@
-```yaml
+---
 title: Redis
 type: entity
 category: database-server
@@ -9,7 +9,7 @@ tags:
 created_at: "2023-10-04"
 updated_at: "2023-10-04"
 publish: true
-```
+---
 
 # Redis
 
@@ -39,4 +39,3 @@ Redis is an open-source, in-memory data structure server used primarily as a cac
 - [[Database Server]]
 - [[Caching]]
 - [[In-Memory Data Structures]]
-```

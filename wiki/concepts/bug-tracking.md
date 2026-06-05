@@ -1,11 +1,11 @@
-```yaml
+---
 title: Bug Tracking
 type: concept
 tags: [software-development, project-management]
 created_at: "2023-11-08"
 updated_at: "2023-11-08"
 publish: true
-```
+---
 
 # Bug Tracking
 
@@ -48,5 +48,3 @@ GitHub's issue tracker can also be used for bug tracking in open-source projects
 - [[Software Development]]
 - [[Project Management]]
 - [[Bug Fixing]]
-
-```

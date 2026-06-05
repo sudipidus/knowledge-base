@@ -1,4 +1,4 @@
-```yaml
+---
 title: Redis Sentinel
 type: entity
 category: high-availability-setup
@@ -6,7 +6,7 @@ tags: [redis, high-availability]
 created_at: "2023-10-05"
 updated_at: "2023-10-05"
 publish: true
-```
+---
 
 # Redis Sentinel
 
@@ -28,4 +28,3 @@ Redis Sentinel is a component of the Redis database system that provides automat
 - [[Redis]]
 - [[High Availability Setup]]
 - [[Redis Cluster]]
-```

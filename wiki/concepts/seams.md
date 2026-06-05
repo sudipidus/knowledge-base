@@ -1,4 +1,4 @@
-```yaml
+---
 title: Seams
 type: concept
 tags:
@@ -7,7 +7,7 @@ tags:
 created_at: "2023-10-01"
 updated_at: "{{date}}"
 publish: true
-```
+---
 
 # Seams
 
@@ -39,4 +39,3 @@ Seams in software architecture are points where different components of a system
 - [[Modularity]]
 - [[Replaceability]]
 - [[Incremental-Change]]
-```

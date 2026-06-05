@@ -1,4 +1,4 @@
-```yaml
+---
 title: The Joel Test
 type: entity
 category: tool/methodology
@@ -8,7 +8,7 @@ tags:
 created_at: "2023-10-04"
 updated_at: "2023-10-04"
 publish: true
-```
+---
 
 # The Joel Test
 
@@ -36,4 +36,3 @@ The Joel Test is a set of twelve questions used by developers to evaluate the ef
 - [[software-development]]
 - [[methodology]]
 - Steve McConnell
-```

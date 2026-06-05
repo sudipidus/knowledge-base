@@ -242,8 +242,18 @@ class IngestPipeline:
 
     @staticmethod
     def _strip_llm_wrapper(text: str) -> str:
-        """Strip LLM preamble/postamble around generated markdown pages."""
-        lines = text.strip().split("\n")
+        """Strip LLM preamble/postamble and fix common frontmatter issues."""
+        import re
+        text = text.strip()
+
+        # Fix: frontmatter wrapped in ```yaml ... ``` instead of --- ... ---
+        if text.startswith("```yaml\n"):
+            text = text.replace("```yaml\n", "---\n", 1)
+            text = re.sub(r"\n```\n", "\n---\n", text, count=1)
+            if text.rstrip().endswith("```"):
+                text = text.rstrip()[:-3].rstrip() + "\n"
+
+        lines = text.split("\n")
         # Find first line starting with "---" (frontmatter start)
         start = 0
         for i, line in enumerate(lines):
