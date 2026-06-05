@@ -35,4 +35,5 @@
 - [[concepts/term|Term]]
 
 ## Explorations
+- [[explorations/what-is-raft|what is raft]]
 - [[explorations/what-is-redis|what is redis?]]

@@ -24,3 +24,5 @@ This file records every ingest / update operation performed on the wiki.
 ## [2026-06-05] ingest | "A Collection of New Command Line Tools"
 
 ## [2026-06-05] explore | "what is redis?"
+
+## [2026-06-05] explore | "what is raft"
