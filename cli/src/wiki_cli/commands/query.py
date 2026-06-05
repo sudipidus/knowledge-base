@@ -23,13 +23,40 @@ class QueryEngine:
             self._save_exploration(question, answer)
         return answer
 
+    STOPWORDS = {
+        "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
+        "have", "has", "had", "do", "does", "did", "will", "would", "could",
+        "should", "may", "might", "shall", "can", "need", "dare", "ought",
+        "i", "me", "my", "we", "our", "you", "your", "he", "she", "it",
+        "they", "them", "what", "which", "who", "whom", "this", "that",
+        "am", "not", "no", "nor", "and", "but", "or", "so", "if", "then",
+        "than", "too", "very", "just", "about", "above", "after", "again",
+        "all", "also", "any", "because", "before", "between", "both",
+        "by", "for", "from", "how", "in", "into", "of", "on", "out",
+        "over", "own", "same", "some", "such", "to", "up", "with",
+        "know", "tell", "explain", "describe", "compare", "list",
+    }
+
     def _search(self, question: str) -> list[dict]:
         all_pages = self.wiki_mgr.get_all_page_summaries()
-        question_words = set(question.lower().split())
+        question_words = {w for w in question.lower().split() if w not in self.STOPWORDS and len(w) > 1}
+        if not question_words:
+            question_words = set(question.lower().split())
+
         scored = []
         for page in all_pages:
-            page_text = f"{page['title']} {' '.join(page['tags'])} {page['content']}".lower()
-            score = sum(1 for w in question_words if w in page_text)
+            title = page["title"].lower()
+            tags = " ".join(page["tags"]).lower()
+            content = page["content"].lower()
+            # Title and tag matches are worth more
+            score = 0
+            for w in question_words:
+                if w in title:
+                    score += 5
+                if w in tags:
+                    score += 3
+                if w in content:
+                    score += 1
             if score > 0:
                 scored.append((score, page))
         scored.sort(key=lambda x: x[0], reverse=True)

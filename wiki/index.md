@@ -33,3 +33,6 @@
 - [[concepts/split-vote|Split Vote]]
 - [[concepts/heartbeat|Heartbeat]]
 - [[concepts/term|Term]]
+
+## Explorations
+- [[explorations/what-is-redis|what is redis?]]
